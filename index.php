@@ -38,7 +38,7 @@ function removePersonnages()
 }
 
 
-if (isset($_POST["attaque"])) {
+if (isset($_POST["attaque"]) && isset($player)) {
     $player->attaque($adversaire);
     savePersonnages($player, $adversaire);
 }
