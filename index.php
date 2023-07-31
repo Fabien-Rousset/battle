@@ -1,14 +1,20 @@
 <?php
-echo (session_save_path());
 session_start();
 require_once __DIR__ . '/vendor/autoload.php';
 
-$player = array('name' => '', 'attaquePoints' => 0, 'santePoints' => 0, "manaPoints" => 0);
-$adversaire = array('name' => '', 'attaquePoints' => 0, 'santePoints' => 0, "manaPoints" => 0);
+if (isset($_SESSION["player"]) && isset($_SESSION["adversaire"])) {
+    $player = $_SESSION["player"] && $adversaire = $_SESSION["adversaire"];
+} else {
+    $player = [] && $adversaire = [];
+}
 
 
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['fight'])) {
+    $player = array('name' => '', 'attaquePoints' => 0, 'santePoints' => 0, "manaPoints" => 0);
+    $adversaire = array('name' => '', 'attaquePoints' => 0, 'santePoints' => 0, "manaPoints" => 0);
+
     $player = [
         'name' => trim($_POST['player']["name"]),
         'attaquePoints' => $_POST['player']['attaque'],
@@ -24,21 +30,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     ];
 }
 
+$_SESSION["player"] = $player;
+$_SESSION["adversaire"] = $adversaire;
+
+// setcookie(
+//     $player,
+//     $adversaire,
+//     [
+//         "expires" => time() + 3600 * 24 * (7),
+//         "secure" => true,
+//         "httponly" => false,
+//     ]
+// );
+
+dump($player);
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['attaque'])) {
+    if ($player == $adversaire) {
+        echo "Egalité";
+    } elseif ($player['attaquePoints'] > $adversaire['attaquePoints']) {
+        $adversaire["santePoints"] - 50;
+        echo  $adversaire["name"] . " a perdu 50 points de santé";
+    } elseif ($player['attaquePoints'] < $adversaire['attaquePoints']) {
+        $player["santePoints"] - 50;
+        echo  $player["name"] . " a perdu 50 points de santé";
+    } elseif ($adversaire['attaquePoints'] > $player['attaquePoints']) {
+        $player["santePoints"] - 50;
+        echo  $player["name"] . " a perdu 50 points de santé";
+    } elseif ($adversaire['attaquePoints'] < $player['attaquePoints']) {
+        $adversaire["santePoints"] - 50;
+        echo  $adversaire["name"] . " a perdu 50 points de santé";
+    }
+}
+
+
 
 dump($player, $adversaire);
 
 dump($GLOBALS);
 
 
-// if($player == $adversaire){
-//     echo "Egalité";
-// } elseif ($player['attaquePoints'] > $adversaire['attaquePoints'] && $player['santePoints'] > $adversaire['santePoints'] && ) {
-//     echo "Le joueur a gagné";
-// } elseif ($adversaire['attaquePoints'] > $player['attaquePoints'] && $adversaire['santePoints'] > $player['santePoints'] ) {
-//     echo "L'adversaire a gagné";
-// } else {
-//     echo "Match nul";
-// }
 
 
 ?>
@@ -60,6 +91,9 @@ dump($GLOBALS);
         <audio id="hadoudken-song" src="Haduken.mp3"></audio>
         <audio id="fatality-song" src="fatality.mp3"></audio>
         <h1 class="animate__animated animate__rubberBand">Battle</h1>
+
+
+
         <div id="prematch">
             <form id='formFight' action="<?php $_SERVER["PHP_SELF"]; ?>" method="post">
                 <div>
@@ -107,66 +141,90 @@ dump($GLOBALS);
                 </div>
                 <div class="row mt-2">
                     <div class="d-flex justify-content-center">
-                        <input id="fight" name="fight" type="submit" value="FIGHT">
+                        <input name="fight" type="submit" value="FIGHT">
                     </div>
                 </div>
             </form>
         </div>
-        <div id="match" class="row gx-5">
-            <h2>Match</h2>
-            <div class="col-6 ">
-                <div class="position-relative float-end">
-                    <img id="player" src="https://api.dicebear.com/6.x/lorelei/svg?flip=false&seed=test" alt="Avatar" class="avatar float-end">
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
 
-                    </span>
-                    <ul>
-                        <li>Name :</li>
-                        <li>Attaque :</li>
-                        <li>Mana :</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="col-6" id="adversaire">
-                <div class="position-relative float-start">
-                    <img src="https://api.dicebear.com/6.x/lorelei/svg?flip=true&seed=test2" alt="Avatar" class="avatar">
-                    <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger">
 
-                    </span>
-                    <ul>
-                        <li>Name :</li>
-                        <li>Attaque :</li>
-                        <li>Mana :</li>
-                    </ul>
-                </div>
-            </div>
-            <div id="combats">
-                <h2>Combat</h2>
-                <ul>
+        <?php
+        $match = true;
+        if ($match = false) { ?>
+            <div id="match" class="row gx-5">
+                <h2>Match</h2>
+                <div class="col-6 ">
+                    <div class="position-relative float-end">
+                        <img id="player" src="https://api.dicebear.com/6.x/lorelei/svg?flip=false&seed=test" alt="Avatar" class="avatar float-end">
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
 
-                    <li>
-                        <i class="fa-solid fa-khanda p-1"></i> test
-                    </li>
-
-                </ul>
-                <form id='actionForm' action="index.php" method="post">
-                    <div class="d-flex justify-content-center">
-                        <input id="attaque" name="attaque" type="submit" value="Attaquer">
-                        <input name="soin" type="submit" value="Se soigner">
+                        </span>
+                        <ul>
+                            <li>Name : <?php echo $player["name"]; ?></li>
+                            <li>Attaque :<?php echo $player["attaquePoints"]; ?> </li>
+                            <li>Mana : <?php echo $player["manaPoints"]; ?></li>
+                        </ul>
                     </div>
-                    <div class="d-flex justify-content-center">
-                        <input id="restart" name="restart" type="submit" value="Stopper le combat">
+                </div>
+                <div class="col-6" id="adversaire">
+                    <div class="position-relative float-start">
+                        <img src="https://api.dicebear.com/6.x/lorelei/svg?flip=true&seed=test2" alt="Avatar" class="avatar">
+                        <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger">
+
+                        </span>
+                        <ul>
+                            <li>Name : <?php echo $adversaire["name"]; ?></li>
+                            <li>Attaque :<?php echo $adversaire["attaquePoints"]; ?> </li>
+                            <li>Mana : <?php echo $adversaire["manaPoints"]; ?></li>
+                        </ul>
                     </div>
-                </form>
+                </div>
+                <div id="combats">
+                    <h2>Combat</h2>
+                    <ul>
+
+                        <li>
+                            <i class="fa-solid fa-khanda p-1"></i> test
+                        </li>
+
+                    </ul>
+                    <form id='actionForm' action="index.php" method="post">
+                        <div class="d-flex justify-content-center">
+                            <input id="attaque" name="attaque" type="submit" value="Attaquer">
+                            <input name="soin" type="submit" value="Se soigner">
+                        </div>
+                        <div class="d-flex justify-content-center">
+                            <input id="restart" name="restart" type="submit" value="Stopper le combat">
+                        </div>
+                    </form>
+                </div>
+
+            <?php
+
+        }
+            ?>
+
+
+            <?php
+            $resultat = true;
+            if ($match = false) { ?>
+
+                <div id="Resultats">
+                    <h1>Résultat</h1>
+                    xxxx est le vainqueur !
+                    <form class="d-flex justify-content-center" action="" method="post">
+                        <input name="restart" type="submit" value="Nouveau combat">
+                    </form>
+                </div>
+
+            <?php
+
+            }
+            ?>
             </div>
-            <div id="Resultats">
-                <h1>Résultat</h1>
-                xxxx est le vainqueur !
-                <form class="d-flex justify-content-center" action="" method="post">
-                    <input name="restart" type="submit" value="Nouveau combat">
-                </form>
-            </div>
-        </div>
+
+
+
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
