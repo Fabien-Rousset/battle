@@ -8,6 +8,8 @@ $adversaire = $_SESSION["adversaire"] ?? [];
 $combats = $_SESSION["combats"] ?? [];
 $soigner = $_SESSION["soigner"] ?? [];
 
+list($player, $adversaire, $combat, $soigner) = getInfoInSession();
+
 
 // si je poste le formulaire du debut
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['fight'])) {
@@ -37,12 +39,12 @@ if (isset($_POST["attaque"])) {
     attack($player, $adversaire, $combats);
 }
 
-//si je clique sur soigner
+//si je clique sur restart
 if (isset($_POST["restart"])) {
     session_destroy();
 }
 
-
+//si je clique sur soigner
 if (isset($_POST["soin"])) {
     soigner($player);
 }
@@ -53,6 +55,8 @@ $player = $_SESSION["player"] ?? [];
 $adversaire = $_SESSION["adversaire"] ?? [];
 $combats = $_SESSION["combats"] ?? [];
 $soigner = $_SESSION["soigner"] ?? [];
+
+// list($player, $adversaire, $combat, $soigner) = getInfoInSession();
 ?>
 
 <html lang="fr">
@@ -187,20 +191,21 @@ $soigner = $_SESSION["soigner"] ?? [];
 
         } ?>
             <?php
-            $resultat = true;
-            if ($match = false) { ?>
-
+            foreach ($resultats as $result) { ?> 
                 <div id="Resultats">
                     <h1>Résultat</h1>
-                    xxxx est le vainqueur !
+                      <<?php echo resultat() ?> 
                     <form class="d-flex justify-content-center" action="" method="post">
                         <input name="restart" type="submit" value="Nouveau combat">
                     </form>
                 </div>
+                <?php } ?>
+
+                
 
             <?php
 
-            }
+         
             ?>
             </div>
 
