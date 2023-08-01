@@ -8,7 +8,7 @@ $adversaire = $_SESSION["adversaire"] ?? [];
 $combats = $_SESSION["combats"] ?? [];
 $soigner = $_SESSION["soigner"] ?? [];
 
-list($player, $adversaire, $combat, $soigner) = getInfoInSession();
+// list($player, $adversaire, $combat, $soigner) = getInfoInSession();
 
 
 // si je poste le formulaire du debut
@@ -18,43 +18,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['fight'])) {
 
     $player = [
         'name' => trim($_POST['player']["name"]),
-        'attaquePoints' => $_POST['player']['attaque'],
-        'santePoints' => $_POST['player']['sante'],
-        "manaPoints" => $_POST['player']["mana"],
+        'attaquePoints' => intval($_POST['player']['attaque']),
+        'santePoints' => intval($_POST['player']['sante']),
+        "manaPoints" => intval($_POST['player']["mana"]),
     ];
 
     $adversaire = [
         'name' => trim($_POST['adversaire']["name"]),
-        'attaquePoints' => $_POST['adversaire']['attaque'],
-        'santePoints' => $_POST['adversaire']['sante'],
-        "manaPoints" => $_POST['adversaire']["mana"],
+        'attaquePoints' => intval($_POST['adversaire']['attaque']),
+        'santePoints' => intval($_POST['adversaire']['sante']),
+        "manaPoints" => intval($_POST['adversaire']["mana"]),
     ];
 
     $_SESSION["player"] = $player;
     $_SESSION["adversaire"] = $adversaire;
 }
 
-// si je clique sur attaque
+
+
+// si je clique sur attaquer
 if (isset($_POST["attaque"])) {
     attack($player, $adversaire, $combats);
 }
 
-//si je clique sur restart
+//si je clique sur "Stopper le combat" ou nouveau combat
 if (isset($_POST["restart"])) {
     session_destroy();
 }
 
-//si je clique sur soigner
+//si je clique sur "Se soigner"
 if (isset($_POST["soin"])) {
     soigner($player);
 }
 
+//si je clique sur "Stopper le combat" et nouveau combat
+if (isset($_POST["restart"])) {
+    session_destroy();
+}
+
+
 dump($GLOBALS, $combats, $adversaire);
 
-$player = $_SESSION["player"] ?? [];
-$adversaire = $_SESSION["adversaire"] ?? [];
-$combats = $_SESSION["combats"] ?? [];
-$soigner = $_SESSION["soigner"] ?? [];
+sess
 
 // list($player, $adversaire, $combat, $soigner) = getInfoInSession();
 ?>
@@ -190,27 +195,20 @@ $soigner = $_SESSION["soigner"] ?? [];
             <?php
 
         } ?>
-            <?php
-            foreach ($resultats as $result) { ?> 
+             <?php
+            
+            if ($resultat = true) { ?>
                 <div id="Resultats">
                     <h1>Résultat</h1>
-                      <<?php echo resultat() ?> 
+                    <?php echo resultat($player, $adversaire);  ?>
                     <form class="d-flex justify-content-center" action="" method="post">
-                        <input name="restart" type="submit" value="Nouveau combat">
+                        <input id="restart" name="restart" type="submit" value="Nouveau combat">
                     </form>
                 </div>
-                <?php } ?>
-
-                
-
             <?php
-
-         
+            }
             ?>
             </div>
-
-
-
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
