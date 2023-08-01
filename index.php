@@ -1,16 +1,15 @@
 <?php
 session_start();
 require_once __DIR__ . '/vendor/autoload.php';
+require "lib.php";
 
-if (isset($_SESSION["player"]) && isset($_SESSION["adversaire"])) {
-    $player = $_SESSION["player"] && $adversaire = $_SESSION["adversaire"];
-} else {
-    $player = [] && $adversaire = [];
-}
-
-
+$player = $_SESSION["player"] ?? [];
+$adversaire = $_SESSION["adversaire"] ?? [];
+$combats = $_SESSION["combats"] ?? [];
+$soigner = $_SESSION["soigner"] ?? [];
 
 
+// si je poste le formulaire du debut
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['fight'])) {
     $player = array('name' => '', 'attaquePoints' => 0, 'santePoints' => 0, "manaPoints" => 0);
     $adversaire = array('name' => '', 'attaquePoints' => 0, 'santePoints' => 0, "manaPoints" => 0);
@@ -28,50 +27,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['fight'])) {
         'santePoints' => $_POST['adversaire']['sante'],
         "manaPoints" => $_POST['adversaire']["mana"],
     ];
+
+    $_SESSION["player"] = $player;
+    $_SESSION["adversaire"] = $adversaire;
 }
 
-$_SESSION["player"] = $player;
-$_SESSION["adversaire"] = $adversaire;
+// si je clique sur attaque
+if (isset($_POST["attaque"])) {
+    attack($player, $adversaire, $combats);
+}
 
-// setcookie(
-//     $player,
-//     $adversaire,
-//     [
-//         "expires" => time() + 3600 * 24 * (7),
-//         "secure" => true,
-//         "httponly" => false,
-//     ]
-// );
-
-dump($player);
-
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['attaque'])) {
-    if ($player == $adversaire) {
-        echo "Egalité";
-    } elseif ($player['attaquePoints'] > $adversaire['attaquePoints']) {
-        $adversaire["santePoints"] - 50;
-        echo  $adversaire["name"] . " a perdu 50 points de santé";
-    } elseif ($player['attaquePoints'] < $adversaire['attaquePoints']) {
-        $player["santePoints"] - 50;
-        echo  $player["name"] . " a perdu 50 points de santé";
-    } elseif ($adversaire['attaquePoints'] > $player['attaquePoints']) {
-        $player["santePoints"] - 50;
-        echo  $player["name"] . " a perdu 50 points de santé";
-    } elseif ($adversaire['attaquePoints'] < $player['attaquePoints']) {
-        $adversaire["santePoints"] - 50;
-        echo  $adversaire["name"] . " a perdu 50 points de santé";
-    }
+//si je clique sur soigner
+if (isset($_POST["restart"])) {
+    session_destroy();
 }
 
 
+if (isset($_POST["soin"])) {
+    soigner($player);
+}
 
-dump($player, $adversaire);
+dump($GLOBALS, $combats, $adversaire);
 
-dump($GLOBALS);
-
-
-
-
+$player = $_SESSION["player"] ?? [];
+$adversaire = $_SESSION["adversaire"] ?? [];
+$combats = $_SESSION["combats"] ?? [];
+$soigner = $_SESSION["soigner"] ?? [];
 ?>
 
 <html lang="fr">
@@ -93,71 +74,69 @@ dump($GLOBALS);
         <h1 class="animate__animated animate__rubberBand">Battle</h1>
 
 
-
-        <div id="prematch">
-            <form id='formFight' action="<?php $_SERVER["PHP_SELF"]; ?>" method="post">
-                <div>
-                    Joueur <br>
-                    <div class="row">
-                        <div class="col-6">
-                            <label class="form-label">Name</label>
-                            <input required type="text" class="form-control" name="player[name]">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Attaque</label>
-                            <input required type="number" class="form-control" value="100" name="player[attaque]">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Mana</label>
-                            <input required type="number" class="form-control" value="100" name="player[mana]">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Santé</label>
-                            <input required type="number" class="form-control" value="100" name="player[sante]">
-                        </div>
-                    </div>
-                </div>
-                <hr>
-                <div>
-                    Adversaire <br>
-                    <div class="row">
-                        <div class="col-6">
-                            <label class="form-label">Name</label>
-                            <input required type="text" class="form-control" name="adversaire[name]">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Attaque</label>
-                            <input required type="number" class="form-control" value="100" name="adversaire[attaque]">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Mana</label>
-                            <input required type="number" class="form-control" value="100" name="adversaire[mana]">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Santé</label>
-                            <input required type="number" class="form-control" value="100" name="adversaire[sante]">
+        <?php if (empty($adversaire) || empty($player)) { ?>
+            <div id="prematch">
+                <form id='formFight' action="<?php $_SERVER["PHP_SELF"]; ?>" method="post">
+                    <div>
+                        Joueur <br>
+                        <div class="row">
+                            <div class="col-6">
+                                <label class="form-label">Name</label>
+                                <input required type="text" class="form-control" name="player[name]">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Attaque</label>
+                                <input required type="number" class="form-control" value="100" name="player[attaque]">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Mana</label>
+                                <input required type="number" class="form-control" value="100" name="player[mana]">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Santé</label>
+                                <input required type="number" class="form-control" value="100" name="player[sante]">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="d-flex justify-content-center">
-                        <input name="fight" type="submit" value="FIGHT">
+                    <hr>
+                    <div>
+                        Adversaire <br>
+                        <div class="row">
+                            <div class="col-6">
+                                <label class="form-label">Name</label>
+                                <input required type="text" class="form-control" name="adversaire[name]">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Attaque</label>
+                                <input required type="number" class="form-control" value="100" name="adversaire[attaque]">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Mana</label>
+                                <input required type="number" class="form-control" value="100" name="adversaire[mana]">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Santé</label>
+                                <input required type="number" class="form-control" value="100" name="adversaire[sante]">
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </form>
-        </div>
+                    <div class="row mt-2">
+                        <div class="d-flex justify-content-center">
+                            <input name="fight" type="submit" value="FIGHT">
+                        </div>
+                    </div>
+                </form>
+            </div>
 
 
-        <?php
-        $match = true;
-        if ($match = false) { ?>
+        <?php } else { ?>
             <div id="match" class="row gx-5">
                 <h2>Match</h2>
                 <div class="col-6 ">
                     <div class="position-relative float-end">
                         <img id="player" src="https://api.dicebear.com/6.x/lorelei/svg?flip=false&seed=test" alt="Avatar" class="avatar float-end">
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-
+                            <?php echo  $player["santePoints"]; ?>
                         </span>
                         <ul>
                             <li>Name : <?php echo $player["name"]; ?></li>
@@ -170,7 +149,7 @@ dump($GLOBALS);
                     <div class="position-relative float-start">
                         <img src="https://api.dicebear.com/6.x/lorelei/svg?flip=true&seed=test2" alt="Avatar" class="avatar">
                         <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger">
-
+                            <?php echo $adversaire["santePoints"]; ?>
                         </span>
                         <ul>
                             <li>Name : <?php echo $adversaire["name"]; ?></li>
@@ -182,16 +161,21 @@ dump($GLOBALS);
                 <div id="combats">
                     <h2>Combat</h2>
                     <ul>
-
-                        <li>
-                            <i class="fa-solid fa-khanda p-1"></i> test
-                        </li>
-
+                        <?php foreach ($combats as $combat) { ?>
+                            <li>
+                                <i class="fa-solid fa-khanda p-1"></i><?php echo $combat; ?>
+                            </li>
+                        <?php } ?>
+                        <?php foreach ($soigner as $soin) { ?>
+                            <li>
+                                <i class="fa-solid fa-khanda p-1"></i><?php echo  $soin; ?>
+                            </li>
+                        <?php } ?>
                     </ul>
                     <form id='actionForm' action="index.php" method="post">
                         <div class="d-flex justify-content-center">
                             <input id="attaque" name="attaque" type="submit" value="Attaquer">
-                            <input name="soin" type="submit" value="Se soigner">
+                            <input id="soin" name="soin" type="submit" value="Se soigner">
                         </div>
                         <div class="d-flex justify-content-center">
                             <input id="restart" name="restart" type="submit" value="Stopper le combat">
@@ -201,10 +185,7 @@ dump($GLOBALS);
 
             <?php
 
-        }
-            ?>
-
-
+        } ?>
             <?php
             $resultat = true;
             if ($match = false) { ?>
