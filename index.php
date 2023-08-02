@@ -3,12 +3,7 @@ session_start();
 require_once __DIR__ . '/vendor/autoload.php';
 require "lib.php";
 
-$player = $_SESSION["player"] ?? [];
-$adversaire = $_SESSION["adversaire"] ?? [];
-$combats = $_SESSION["combats"] ?? [];
-$soigner = $_SESSION["soigner"] ?? [];
-
-// list($player, $adversaire, $combat, $soigner) = getInfoInSession();
+list($player, $adversaire, $combats, $soigner) = getInfoInSession();
 
 
 // si je poste le formulaire du debut
@@ -43,6 +38,7 @@ if (isset($_POST["attaque"])) {
 
 //si je clique sur "Stopper le combat" ou nouveau combat
 if (isset($_POST["restart"])) {
+    $_SESSION = [];
     session_destroy();
 }
 
@@ -51,17 +47,13 @@ if (isset($_POST["soin"])) {
     soigner($player);
 }
 
-//si je clique sur "Stopper le combat" et nouveau combat
-if (isset($_POST["restart"])) {
-    session_destroy();
-}
 
 
-dump($GLOBALS, $combats, $adversaire);
+dump($GLOBALS, $combats, $adversaire, $player);
 
-sess
 
-// list($player, $adversaire, $combat, $soigner) = getInfoInSession();
+list($player, $adversaire, $combats, $soigner) = getInfoInSession();
+$resultat = resultat();
 ?>
 
 <html lang="fr">
@@ -195,12 +187,12 @@ sess
             <?php
 
         } ?>
-             <?php
-            
-            if ($resultat = true) { ?>
+            <?php
+
+            if ($resultat != null) { ?>
                 <div id="Resultats">
                     <h1>Résultat</h1>
-                    <?php echo resultat($player, $adversaire);  ?>
+                    <?php echo $resultat; ?>
                     <form class="d-flex justify-content-center" action="" method="post">
                         <input id="restart" name="restart" type="submit" value="Nouveau combat">
                     </form>

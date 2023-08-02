@@ -1,7 +1,6 @@
 <?php
 
-
-function initSession()
+function getInfoInSession()
 {
     $player = $_SESSION["player"] ?? [];
     $adversaire = $_SESSION["adversaire"] ?? [];
@@ -10,13 +9,13 @@ function initSession()
     return [$player, $adversaire, $combats, $soigner];
 }
 
-session_start();
-$player = $_SESSION["player"] ?? [];
-$adversaire = $_SESSION["adversaire"] ?? [];
-$combats = $_SESSION["combats"] ?? [];
-$soigner = $_SESSION["soigner"] ?? [];
-// Call the function to initialize the session variables
-[$player, $adversaire, $combats, $soigner] = initSession();
+// function setInfoInSession(?array $player, ?array $adversaire, ?array $combats, ?array $soigner): void
+// {
+//     $_SESSION["player"] = $player;
+//     $_SESSION["adversaire"] = $adversaire;
+//     $_SESSION["combats"] = $combats;
+//     $_SESSION["soigner"] = $soigner;
+// }
 
 function checkErrorsForm(): array
 {
@@ -58,11 +57,9 @@ function checkErrorsForm(): array
 
 
 
-function attack(array $player, array $adversaire, array $combats):void
+function attack(array $player, array $adversaire, array $combats): void
 {
-
     if ($player && $adversaire) {
-        // list($player, $adversaire, $combat) = getInfoInSession();
         $playerAttackPoints = $player['attaquePoints'];
         $adversaireAttackPoints = $adversaire['attaquePoints'];
 
@@ -79,7 +76,7 @@ function attack(array $player, array $adversaire, array $combats):void
         $_SESSION["adversaire"] = $adversaire;
         $_SESSION["combats"] = $combats;
 
-        // getInfoInSession($player, $adversaire, $combat);  
+      
     }
 }
 
@@ -95,20 +92,16 @@ function soigner(array $player)
     // list($player, $soigner) = getInfoInSession();
 }
 
-function resultat(array $player, array $adversaire,)
+function resultat(): ?string
 {
-    //  list($player, $adversaire) = getInfoInSession();
-    $player = $_SESSION["player"] ?? [];
-    $adversaire = $_SESSION["adversaire"] ?? [];
+     list($player, $adversaire) = getInfoInSession();
 
-    if ($player["santePoints"] <= 0) {
-        echo "$adversaire[name] à gagné la partie";
+    if ($player && $player["santePoints"] <= 0) {
+        return "$adversaire[name] à gagné la partie";
+    } elseif ($adversaire && $adversaire["santePoints"] <= 0) {
+        return "$player[name] à gagné la partie";
     }
-    elseif ($adversaire["santePoints"] <= 0) {
-        echo "$player[name] à gagné la partie";
-    }
-
-    return true;
+    return null;
 }
 
-?>
+  
