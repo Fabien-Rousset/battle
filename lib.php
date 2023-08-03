@@ -104,4 +104,67 @@ function resultat(): ?string
     return null;
 }
 
+
+function insertPlayer(array $player): int
+{
+    $mysql_host = "localhost";
+    $mysql_database = "game";
+    $mysql_user = "root";
+    $mysql_password = "";
+    $dbh = new PDO("mysql:host=$mysql_host;dbname=$mysql_database", $mysql_user, $mysql_password);
+
+
+    // Prepare the SQL statement
+    $sql = ("INSERT INTO players (Name, Attack, Health, Mana) VALUES (:name, :attaquePoints, :santePoints, :manaPoints)");
+    $stmt = $dbh->prepare($sql);
+
+    // Bind the data to the parameters
+    $stmt->bindParam(':name', $player['name']);
+    $stmt->bindParam(':attaquePoints', $player['attaquePoints']);
+    $stmt->bindParam(':santePoints', $player['santePoints']);
+    $stmt->bindParam(':manaPoints', $player['manaPoints']);
+
+    // Execute the statement
+    $stmt->execute();
+
+    // Close the connection
+    // $conn = null;
+
+
+    $id =$dbh->lastInsertId();
+    return $id;
+    dump($id);
+}
+
+function insertAdversaire(array $adversaire)
+{
+    $mysql_host = "localhost";
+    $mysql_database = "game";
+    $mysql_user = "root";
+    $mysql_password = "";
+    $dbh = new PDO("mysql:host=$mysql_host;dbname=$mysql_database", $mysql_user, $mysql_password);
+
+
+    // Prepare the SQL statement
+    $sql = ("INSERT INTO players (Name, Attack, Health, Mana) VALUES (:name, :attaquePoints, :santePoints, :manaPoints)");
+    $stmt = $dbh->prepare($sql);
+
+    // Bind the data to the parameters
+    $stmt->bindParam(':name', $adversaire['name']);
+    $stmt->bindParam(':attaquePoints', $adversaire['attaquePoints']);
+    $stmt->bindParam(':santePoints', $adversaire['santePoints']);
+    $stmt->bindParam(':manaPoints', $adversaire['manaPoints']);
+
+    // Execute the statement
+    $stmt->execute();
+
+    // Close the connection
+    // $conn = null;
+
+
+    // $id_adversaire = $dbh->lastInsertId();
+    
+}
+
+
   

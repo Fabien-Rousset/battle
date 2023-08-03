@@ -3,6 +3,25 @@ session_start();
 require_once __DIR__ . '/vendor/autoload.php';
 require "lib.php";
 
+//CONNEXION base de données
+try {
+    $mysql_host = "localhost";
+    $mysql_database = "game";
+    $mysql_user = "root";
+    $mysql_password = "";
+    $dbh = new PDO("mysql:host=$mysql_host;dbname=$mysql_database", $mysql_user, $mysql_password);
+    $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $query = "SELECT * from players";
+    $save = $dbh->exec($query);
+} catch (PDOException $e) {
+    echo $e->getMessage(); //Remove or change message in production code
+}
+
+
+
+
+
+
 list($player, $adversaire, $combats, $soigner) = getInfoInSession();
 
 
@@ -27,7 +46,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['fight'])) {
 
     $_SESSION["player"] = $player;
     $_SESSION["adversaire"] = $adversaire;
+    
+     
+    $player_info = insertPlayer($player);
+        // $dbh->query("INSERT INTO players (Name) VALUES({$_POST['player']['name']})");
+    dump($dbh);
+    $adversaire_info = insertAdversaire($adversaire);
+    
 }
+
+
+
 
 
 
@@ -54,6 +83,12 @@ dump($GLOBALS, $combats, $adversaire, $player);
 
 list($player, $adversaire, $combats, $soigner) = getInfoInSession();
 $resultat = resultat();
+
+
+
+
+
+
 ?>
 
 <html lang="fr">
@@ -83,7 +118,7 @@ $resultat = resultat();
                         <div class="row">
                             <div class="col-6">
                                 <label class="form-label">Name</label>
-                                <input required type="text" class="form-control" name="player[name]">
+                                <input required type="text" class="form-control" name="player[name]" value="player[name]">
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Attaque</label>
