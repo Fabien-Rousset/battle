@@ -166,5 +166,37 @@ function insertAdversaire(array $adversaire)
     
 }
 
+function insertWinner(array $winner): int
+{
+    $mysql_host = "localhost";
+    $mysql_database = "game";
+    $mysql_user = "root";
+    $mysql_password = "";
+    $dbh = new PDO("mysql:host=$mysql_host;dbname=$mysql_database", $mysql_user, $mysql_password);
+
+
+    // Prepare the SQL statement
+    $dbh->query("SELECT player_ID FROM players");
+    $sql = ("INSERT INTO fight () VALUES ()");
+    $stmt = $dbh->prepare($sql);
+
+    // Bind the data to the parameters
+    $stmt->bindParam(':winner', $winner['name']);
+
+    // Execute the statement
+    $stmt->execute();
+
+    // Close the connection
+    // $conn = null;
+
+
+    $id_winner = $dbh->lastInsertId();
+    return $id_winner;
+}
+
+
+
+
+
 
   
